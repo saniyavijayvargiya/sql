@@ -1,0 +1,878 @@
+CREATE TABLE Salespeople (SNUM int PRIMARY KEY,
+			                    SNAME varchar(15),
+                          CITY varchar(15),
+                          COMM int);
+                          
+CREATE TABLE Customers (CNUM int PRIMARY KEY,
+			                  CNAME varchar(15),
+                        CITY varchar(15),
+                        RATING int,
+                        SNUM int,
+                        FOREIGN KEY(SNUM) REFERENCES Salespeople(SNUM));
+                        
+CREATE TABLE Orders (ONUM int PRIMARY KEY,
+	     	             AMT float,
+                     ODATE date,
+                     CNUM int, 
+                     SNUM int,
+                     FOREIGN KEY(CNUM) REFERENCES Customers(CNUM),
+                     FOREIGN KEY(SNUM) REFERENCES Salespeople(SNUM));
+
+
+INSERT INTO Salespeople VALUES(1001, "Peel", "London", 12);
+INSERT INTO Salespeople VALUES(1002, "Serres", "San Jose", 13);
+INSERT INTO Salespeople VALUES(1004, "Motika", "London", 11);
+INSERT INTO Salespeople VALUES(1007, "Rifkin", "Barcelona", 15);
+INSERT INTO Salespeople VALUES(1003, "AxelRod", "New York", 10);
+INSERT INTO Salespeople VALUES(1008, "Fran", "London", 25);
+
+
+INSERT INTO Customers VALUES(2001, "Hoffman", "London", 100, 1001);
+INSERT INTO Customers VALUES(2002, "Giovanni", "Rome", 200, 1003);
+INSERT INTO Customers VALUES(2003, "Liu", "San Jose", 200, 1002);
+INSERT INTO Customers VALUES(2004, "Grass", "Berlin", 300, 1002);
+INSERT INTO Customers VALUES(2006, "Clemens", "London", 100, 1001);
+INSERT INTO Customers VALUES(2008, "Cisneros", "San Jose", 300, 1007);
+INSERT INTO Customers VALUES(2007, "Pereira", "Rome", 100, 1004);
+
+
+INSERT INTO Orders VALUES(3001, 18.69, "1990-03-10", 2008, 1007);
+INSERT INTO Orders VALUES(3003, 767.19, "1990-03-10", 2001, 1001);
+INSERT INTO Orders VALUES(3002, 1900.10, "1990-03-10", 2007, 1004);
+INSERT INTO Orders VALUES(3005, 5160.45, "1990-03-10", 2003, 1002);
+INSERT INTO Orders VALUES(3006, 1098.16, "1990-03-10", 2008, 1007);
+INSERT INTO Orders VALUES(3009, 1713.23, "1990-04-10", 2002, 1003);
+INSERT INTO Orders VALUES(3007, 75.75, "1990-04-10", 2004, 1002);
+INSERT INTO Orders VALUES(3008, 4723.00, "1990-05-10", 2006, 1001);
+INSERT INTO Orders VALUES(3010, 1309.95, "1990-06-10", 2004, 1002);
+INSERT INTO Orders VALUES(3011, 9891.88, "1990-06-10", 2006, 1001);
+
+
+1.	SHOW COLUMNS FROM Salespeople;
+SNUM	  int	  NO	   PRI		
+SNAME	  varchar(15)  	  YES			
+CITY	  varchar(15)	  YES			
+COMM	  int	  YES			
+
+
+2.	SELECT CNAME FROM Customers WHERE RATING = 100;
+  CNAME
+Clemens
+Hoffman
+Pereira
+
+3.	SELECT O.SNUM, SNAME, MAX(AMT), ODATE FROM Salespeople AS S JOIN Orders AS O ON S.SNUM = O.SNUM GROUP BY O.SNUM, ODATE;
+  SNUM    SNAME     MAX(AMT)     ODATE
+1001	     Peel	767.19	     1990-03-10
+1001  	     Peel	4723	     1990-05-10
+1001  	     Peel	9891.88	     1990-06-10
+1002	     Serres	5160.45	     1990-03-10
+1002	     Serres	75.75	     1990-04-10
+1002	     Serres	1309.95	     1990-06-10
+1003	     AxelRod	1713.23	     1990-04-10
+1004	     Motika	1900.1	     1990-03-10
+1007	     Rifkin	1098.16	     1990-03-10
+
+
+4.	SELECT * FROM Orders ORDER BY CNUM DESC;
+ONUM        AMT           ODATE             CNUM   SNUM
+3001	      18.69	  1990-03-10	   2008	   1007
+3002	      1900.1	  1990-03-10	   2007	   1004
+3003	      767.19	  1990-03-10	   2001	   1001
+3005	      5160.45	  1990-03-10	   2003	   1002
+3006	      1098.16  	  1990-03-10	   2008	   1007
+3007	      75.75	  1990-04-10	   2004	   1002
+3008	      4723	  1990-05-10	   2006	   1001
+3009	      1713.23	  1990-04-10	   2002	   1003
+3010	      1309.95	  1990-06-10	   2004	   1002
+3011	      9891.88	  1990-06-10	   2006	   1001
+				
+				
+5.	SELECT DISTINCT SNAME FROM Salespeople AS S JOIN Orders AS O ON S.SNUM = O.SNUM;
+SNAME
+Peel
+Serres
+AxelRod
+Motika
+Rifkin
+
+
+6.	SELECT CNAME, SNAME FROM Customers AS C JOIN Salespeople AS S ON C.SNUM = S.SNUM;
+  CNAME        SNAME
+Hoffman	    Peel
+Clemens	    Peel
+Liu	    Serres
+Grass	    Serres
+Giovanni  	    AxelRod
+Pereira 	    Motika
+Cisneros	    Rifkin
+
+
+7.	SELECT S.SNUM, SNAME, COUNT(CNUM) FROM Salespeople AS S JOIN Customers AS C ON S.SNUM = C.SNUM GROUP BY SNUM HAVING COUNT(CNUM)>1;
+SNUM    SNAME    COUNT(CNUM)
+1001	   Peel	    2
+1002	   Serres	    2
+
+
+8.	SELECT SNUM, COUNT(ONUM) FROM Orders GROUP BY SNUM ORDER BY COUNT(ONUM) DESC;
+SNUM   COUNT(ONUM)
+1001	      3
+1002	      3
+1003   	      1
+1004	      1
+1007	      2
+	
+
+9.	SELECT * FROM Customers WHERE (SELECT COUNT(*) FROM Customers WHERE CITY = 'San Jose') > 1;
+CNUM CNAME    CITY        RATING   SNUM
+2001	Hoffman	London	100	    1001
+2002	Giovanni	Rome	200	    1003
+2003	Liu	San Jose	200	    1002
+2004	Grass	Berlin	300	    1002
+2006	Clemens	London	100	    1001
+2007	Pereira	Rome	100	1004
+2008	Cisneros	San Jose	300	1007		
+
+
+10.	SELECT SNAME, CNAME, S.CITY FROM Salespeople AS S JOIN Customers AS C ON S.CITY = C.CITY;
+SNAME          CNAME             CITY
+Fran      	 Hoffman	        London
+Motika	     Hoffman	     London
+Peel	     Hoffman	     London
+Fran	     Clemens	     London
+Motika	     Clemens	     London
+Peel	     Clemens	     London
+Serres	       Liu	    San Jose
+Serres	     Cisneros	    San Jose
+
+
+11.	SELECT CNUM, CNAME FROM Customers WHERE CITY = 'San Jose' AND RATING >= 200;
+CNUM      CNAME
+2003   	     Liu
+2008	    Cisneros
+
+
+12.	SELECT SNAME, COMM FROM Salespeople WHERE CITY = 'London';
+SNAME     COMM
+Peel	    12
+Motika	    11
+Fran	    25
+
+
+13.	SELECT ONUM, AMT, ODATE FROM Orders AS O JOIN Salespeople AS S ON O.SNUM = S.SNUM AND SNAME = 'Motika';
+ONUM     AMT            ODATE
+3002	    1900.1  	    1990-03-10
+
+
+14.	SELECT C.CNUM, CNAME FROM Customers AS C JOIN Orders AS O ON C.CNUM = O.CNUM AND ODATE = '1990-03-10';
+CNUM   CNAME
+2008	  Cisneros
+2007	  Pereira
+2001  	  Hoffman
+2003	  Liu
+2008	  Cisneros
+
+
+15.	SELECT ODATE, SUM(AMT) FROM Orders GROUP BY ODATE HAVING SUM(AMT) > (SELECT MAX(AMT) FROM Orders);
+ODATE       SUM(AMT)
+1990-06-10	11201.83
+
+
+16.	SELECT ONUM FROM Orders WHERE AMT > (SELECT MIN(AMT) FROM Orders WHERE ODATE = '1990-06-10');
+ONUM
+3002
+3005
+3008
+3009
+3011
+
+
+17.	SELECT DISTINCT SNAME FROM Salespeople AS S JOIN Customers AS C ON S.SNUM = C.SNUM WHERE RATING = 300;
+ SNAME
+Serres
+Rifkin
+
+
+18.	SELECT CNUM, CNAME FROM Customers WHERE CNUM = 1000 + (SELECT SNUM FROM Salespeople WHERE SNAME = 'Serres');
+CNUM  CNAME
+2002	 Giovanni
+	
+
+19.	SELECT SNAME, COMM/100 FROM Salespeople;
+SNAME     COMM/100
+Peel	0.1200
+Serres	0.1300
+AxelRod	0.1000
+Motika	0.1100
+Rifkin	0.1500
+Fran	0.2500
+
+
+20.	SELECT SNUM, MAX(AMT), ODATE FROM Orders GROUP BY SNUM, ODATE HAVING MAX(AMT) >= 3000;
+SNUM   MAX(AMT)    ODATE
+1002	  5160.45	  1990-03-10
+1001	  4723	  1990-05-10
+1001	  9891.88	  1990-06-10
+
+
+21.	SELECT SNUM, MAX(AMT) FROM Orders WHERE ODATE = '1990-03-10' GROUP BY SNUM;
+SNUM   MAX(AMT)
+1001	   767.19
+1002  	   5160.45
+1004	   1900.1
+1007	   1098.16
+
+
+22.	SELECT CNAME FROM Customers WHERE CITY IN (SELECT C.CITY FROM Customers AS C JOIN Salespeople AS S ON C.SNUM = S.SNUM AND SNAME = 'Serres');
+CNAME
+Liu
+Grass
+Cisneros
+
+
+23.	SELECT * FROM Customers WHERE RATING > 200;
+CNUM    CNAME          CITY         RATING   SNUM
+2004	    Grass	  Berlin	   300	     1002
+2008	    Cisneros	  San Jose	   300	     1007
+				
+
+24.	SELECT COUNT(DISTINCT SNUM) FROM Orders;
+COUNT(DISTINCT SNUM)
+      5
+
+
+25.	SELECT CNAME, SNAME, COMM FROM Salespeople AS S JOIN Customers AS C ON S.SNUM = C.SNUM WHERE COMM > 12;
+CNAME     SNAME     COMM
+Liu	  Serres	   13
+Grass	  Serres	   13
+Cisneros	  Rifkin	   15
+
+
+26.	SELECT SNUM FROM Customers GROUP BY SNUM HAVING COUNT(CNUM) > 1;
+SNUM
+1001
+1002
+
+
+27.	SELECT DISTINCT S.SNUM, SNAME FROM Customers AS C JOIN Salespeople AS S ON C.SNUM = S.SNUM WHERE C.CITY = S.CITY;
+SNUM     SNAME
+1001	   Peel
+1002	   Serres
+
+
+28.	SELECT SNAME FROM Salespeople WHERE SNAME LIKE 'P__l%';
+SNAME
+Peel
+
+
+29.	SELECT ONUM, AMT, ODATE FROM Orders WHERE CNUM = (SELECT CNUM FROM Customers WHERE CNAME = 'Cisneros');
+ONUM     AMT         ODATE
+3001	 18.69	   1990-03-10
+3006	 1098.16	   1990-03-10
+		
+
+30.	SELECT SNAME, MAX(AMT) FROM Orders AS O JOIN Salespeople AS S ON O.SNUM = S.SNUM WHERE SNAME = 'Serres' OR SNAME = 'Rifkin' GROUP BY SNAME;
+SNAME     MAX(AMT)
+Serres	   5160.45
+Rifkin	   1098.16
+
+
+31.	SELECT * FROM Salespeople ORDER BY SNUM, SNAME, COMM, CITY;
+SNUM     SNAME        CITY           COMM
+1001	     Peel	London	  12
+1002 	    Serres	San Jose	  13
+1003  	    AxelRod	New York	  10
+1004	    Motika	London	  11
+1007	    Rifkin	Barcelona	  15
+1008	    Fran	London	  25
+			
+
+32.	SELECT CNAME FROM Customers WHERE CNAME BETWEEN 'A%' AND 'G%';
+CNAME
+Clemens
+Cisneros
+
+
+33.	SELECT C1.CNAME, C2.CNAME FROM Customers AS C1 JOIN Customers AS C2 ON C1.CNUM != C2.CNUM;
+  CNAME     CNAME 
+Cisneros	  Hoffman
+Pereira	    Hoffman
+Clemens   	Hoffman
+Grass	      Hoffman
+Liu	        Hoffman
+Giovanni	 Hoffman
+Cisneros	  Giovanni
+Pereira	   Giovanni
+Clemens	   Giovanni
+Grass	     Giovanni
+Liu	    Giovanni
+Hoffman	  Giovanni
+Cisneros	  Liu
+Pereira	  Liu
+Clemens	   Liu
+Grass	   Liu
+Giovanni    	Liu
+Hoffman	  Liu
+Cisneros	  Grass
+Pereira	   Grass
+Clemens	Grass
+Liu	Grass
+Giovanni	Grass
+Hoffman	   Grass
+Cisneros	  Clemens
+Pereira	   Clemens
+Grass	   Clemens
+Liu	      Clemens
+Giovanni	  Clemens
+Hoffman	    Clemens
+Cisneros	  Pereira
+Clemens	   Pereira
+Grass  	Pereira
+Liu	   Pereira
+Giovanni	  Pereira
+Hoffman	  Pereira
+Pereira	  Cisneros
+Clemens	  Cisneros
+Grass  	Cisneros
+Liu	   Cisneros
+Giovanni	 Cisneros
+Hoffman	   Cisneros
+
+
+34.	SELECT ONUM, AMT FROM Orders WHERE AMT > (SELECT AVG(AMT) FROM Orders WHERE ODATE = '1990-04-10');
+ONUM   AMT
+3002	  1900.1
+3005	  5160.45
+3006	  1098.16
+3008	  4723
+3009	  1713.23
+3010	  1309.95
+3011	  9891.88
+
+
+35.	SELECT CNUM, CNAME FROM Customers AS C1 JOIN (SELECT CITY, MAX(RATING) AS RATING FROM Customers GROUP BY CITY) AS C2 ON C1.CITY = C2.CITY AND C1.RATING = C2.RATING;
+CNUM CNAME
+2001	Hoffman
+2002	Giovanni
+2004	Grass
+2006	Clemens
+2008	Cisneros
+
+
+36.	SELECT ODATE, SUM(AMT) FROM Orders GROUP BY ODATE ORDER BY SUM(AMT) DESC;
+      ODATE            SUM(AMT)
+1990-06-10	   11201.829833984375
+1990-03-10	   8944.590208053589
+1990-05-10	   4723
+1990-04-10	   1788.97998046875
+
+
+37.	SELECT RATING, CNAME FROM Customers WHERE CITY = 'San Jose';
+RATING     CNAME 
+200	        Liu
+300	       Cisneros
+
+
+38.	SELECT * FROM Orders WHERE AMT < (SELECT MIN(AMT) FROM Orders AS O JOIN Customers AS C ON O.CNUM = C.CNUM WHERE CITY = 'San Jose');
+(NULL)
+
+
+39.	SELECT * FROM Orders A WHERE AMT > (SELECT AVG(AMT) FROM Orders B WHERE A.CNUM = B.CNUM);
+ONUM    AMT             ODATE          CNUM    SNUM
+3006	  1098.16	  1990-03-10	   2008	   1007
+3010	  1309.95	  1990-06-10	   2004	   1002
+3011	  9891.88	  1990-06-10	   2006	   1001
+				
+
+40.	SELECT CITY, MAX(RATING) FROM Customers GROUP BY CITY;
+  CITY          MAX(RATING)
+London	    100
+Rome	    200
+San Jose	   300
+Berlin	   300
+
+
+41.	SELECT SNAME, COMM, RATING FROM Salespeople S JOIN Customers C ON S.SNUM = C.SNUM WHERE RATING > 100;
+  SNAME      COMM  RATING
+AxelRod	   10	       200
+Serres	   13	       200
+Serres	   13	       300
+Rifkin	   15 	       300
+
+
+42.	SELECT COUNT(CNUM) FROM Customers WHERE RATING > (SELECT AVG(RATING) FROM Customers WHERE CITY = 'San Jose');
+COUNT(CNUM)
+        2
+
+
+43.	SELECT * FROM Salespeople WHERE CITY IN ('Barcelona', 'London');
+SNUM     SNAME       CITY            COMM
+1001	    Peel	   London	  12
+1004  	    Motika  	   London	  11
+1007	    Rifkin	   Barcelona	  15
+1008	    Fran	   London	  25
+			
+
+44.	SELECT SNAME FROM Salespeople S JOIN Customers C ON S.SNUM = C.SNUM GROUP BY C.SNUM HAVING COUNT(CNUM) = 1;
+   SNAME
+AxelRod	
+Motika	
+Rifkin	
+
+
+45.	SELECT C1.CNAME, C2.CNAME FROM Customers AS C1 JOIN Customers AS C2 ON C1.SNUM = C2.SNUM AND C1.CNUM != C2.CNUM;
+CNAME       CNAME 
+Hoffman	Clemens
+Liu	Grass
+Grass	Liu
+Clemens	Hoffman
+
+
+46.	SELECT * FROM Orders WHERE AMT > 1000;
+ONUM    AMT               ODATE           CNUM  SNUM
+3002	   1900.1	   1990-03-10  	   2007	   1004
+3005 	   5160.45	   1990-03-10	   2003	   1002
+3006	   1098.16	   1990-03-10	   2008	   1007
+3008	   4723	   1990-05-10	   2006	   1001
+3009	   1713.23	   1990-04-10	   2002	   1003
+3010	   1309.95	   1990-06-10	   2004	   1002
+3011	   9891.88	   1990-06-10	   2006	   1001
+
+
+47.	SELECT ONUM, CNAME FROM Orders AS O JOIN Customers AS C ON O.CNUM = C.CNUM;
+ONUM   CNAME
+3003	  Hoffman
+3009  	  Giovanni
+3005	  Liu
+3007 	  Grass
+3010	  Grass
+3008	  Clemens
+3011	  Clemens
+3002	  Pereira
+3001	  Cisneros
+3006	  Cisneros
+
+
+48.	SELECT CNAME FROM Customers WHERE RATING >= ANY (SELECT RATING FROM Customers AS C JOIN Salespeople AS S ON C.SNUM = S.SNUM WHERE SNAME = 'Serres');
+   CNAME
+Giovanni
+Liu
+Grass
+Cisneros
+
+
+49.	SELECT ONUM, ODATE FROM Orders WHERE ODATE IN ('1990-03-10', '1990-04-10');
+ONUM    ODATE
+3001	  1990-03-10
+3002	  1990-03-10
+3003	  1990-03-10
+3005	  1990-03-10
+3006	  1990-03-10
+3007	  1990-04-10
+3009	  1990-04-10
+	
+
+50.	SELECT CNUM, CNAME FROM Customers WHERE RATING > (SELECT MAX(RATING) FROM Customers WHERE CITY = 'Rome');
+CNUM    CNAME
+2004	   Grass
+2008  	   Cisneros
+	
+
+51.	SELECT * FROM Customers WHERE CITY = 'Rome' OR RATING > 100;
+CNUM    CNAME         CITY           RATING  SNUM
+2002	   Giovanni	   Rome	   200	   1003
+2003	   Liu	   San Jose	   200	   1002
+2004	   Grass	   Berlin	   300	   1002
+2007	   Pereira	   Rome	   100	   1004
+2008	   Cisneros	   San Jose	   300	   1007
+				
+
+52.	SELECT * FROM Customers WHERE SNUM = 1001;
+CNUM     CNAME         CITY        RATING   SNUM
+2001	   Hoffman	   London	  100	     1001
+2006	   Clemens  	   London	  100	     1001
+				
+
+53.	SELECT SUM(AMT), SNUM FROM Orders GROUP BY SNUM HAVING SUM(AMT) > (SELECT MAX(AMT) FROM Orders);
+SUM(AMT)       SNUM
+15382.069    	   1001
+54.	SELECT * FROM Orders WHERE AMT = 0;
+(NULL)
+
+
+55.	SELECT SNAME, CNAME FROM Salespeople S JOIN Customers C ON S.SNUM = C.SNUM WHERE RATING < 200;
+SNAME   CNAME
+Peel	Hoffman
+Peel	Clemens
+Motika	Pereira
+
+
+56.	SELECT SNAME, COMM FROM Salespeople;
+SNAME     COMM
+Peel	  12
+Serres	  13
+AxelRod  	  10
+Motika	  11
+Rifkin	  15
+Fran	  25
+
+
+57.	SELECT CNAME, CITY FROM Customers WHERE RATING = (SELECT RATING FROM Customers WHERE CNAME = 'Hoffman');
+CNAME     CITY
+Hoffman	London
+Clemens	London
+Pereira	Rome
+
+
+58.	SELECT SNAME, CNAME FROM Salespeople S JOIN Customers C ON S.SNUM = C.SNUM ORDER BY SNAME;
+SNAME       CNAME 
+AxelRod	Giovanni
+Motika	Pereira
+Peel	Hoffman
+Peel	Clemens
+Rifkin	Cisneros
+Serres	Liu
+Serres	Grass
+
+
+59.	SELECT CNAME FROM Customers C JOIN Orders O ON C.CNUM = O.CNUM WHERE AMT > (SELECT AVG(AMT) AS AMT FROM Orders) GROUP BY CNAME;
+CNAME
+Liu
+Clemens
+
+
+60.	SELECT SUM(AMT) FROM Orders;
+SUM(AMT)
+26658.40
+
+
+61.	SELECT ONUM, AMT, ODATE FROM Orders;
+ONUM      AMT          DATE
+3001	    18.69	 1990-03-10
+3002	    1900.1	 1990-03-10
+3003	    767.19	 1990-03-10
+3005	    5160.45	 1990-03-10
+3006	   1098.16	 1990-03-10
+3007	    75.75	 1990-04-10
+3008	    4723	 1990-05-10
+3009	   1713.23	 1990-04-10
+3010	   1309.95	 1990-06-10
+3011	   9891.88	 1990-06-10
+		
+
+62.	SELECT COUNT(RATING) FROM Customers WHERE RATING IS NOT NULL;
+COUNT(RATING)
+      7
+
+
+63.	SELECT ONUM, CNAME, SNAME FROM Orders AS O JOIN Customers as C ON O.CNUM = C.CNUM JOIN Salespeople AS S ON C.SNUM = S.SNUM;
+ONUM CNAME   SNAME
+3003	Hoffman	Peel
+3009	Giovanni	AxelRod
+3005	Liu	Serres
+3007	Grass	Serres
+3010	Grass	Serres
+3008	Clemens	Peel
+3011	Clemens	Peel
+3002	Pereira	Motika
+3001	Cisneros	Rifkin
+3006	Cisneros	Rifkin
+
+
+64.	SELECT SNAME, COMM FROM Salespeople AS S JOIN Customers AS C ON S.SNUM = C.SNUM WHERE C.CITY = 'London';
+SNAME COMM
+Peel	   12
+
+
+65.	SELECT C.SNUM, SNAME FROM Customers C JOIN Salespeople S ON C.SNUM = S.SNUM WHERE S.CITY != C.CITY;
+SNUM  SNAME
+1003	AxelRod
+1002	Serres
+1004	Motika
+1007	Rifkin
+
+
+66.	SELECT DISTINCT SNAME FROM Salespeople S JOIN Customers C ON S.CITY = C.CITY AND S.SNUM != C.SNUM;
+SNAME
+Fran
+Motika
+Serres
+
+
+67.	SELECT CNUM, CNAME, SNAME FROM Salespeople AS S JOIN Customers AS C ON S.SNUM = C.SNUM AND SNAME IN ('Motika', 'Peel');
+CNUM   CNAME  SNAME
+2001	Hoffman	Peel
+2006	Clemens	Peel
+2007	Pereira	Motika
+
+
+68.	SELECT ODATE, COUNT(DISTINCT SNUM) FROM ORDERS GROUP BY ODATE;
+   ODATE        COUNT(DISTINCT SNUM)
+1990-03-10	         4
+1990-04-10	         2
+1990-05-10 	         1
+1990-06-10	         2
+
+
+69.	SELECT ONUM, O.SNUM FROM Orders AS O JOIN Salespeople AS S ON O.SNUM = S.SNUM WHERE CITY = 'London';
+ONUM SNUM
+3003	1001
+3008	1001
+3011	1001
+3002	1004
+
+
+70.	SELECT ONUM, O.CNUM, O.SNUM FROM Orders AS O JOIN Customers AS C ON O.CNUM = C.CNUM JOIN Salespeople AS S ON O.SNUM = S.SNUM WHERE C.CITY != S.CITY;
+ONUM  CNUM  SNUM
+3009	   2002	  1003
+3007	   2004	  1002
+3010	   2004	  1002
+3002	   2007	  1004
+3001	   2008	  1007
+3006	   2008	  1007
+
+
+71.	SELECT SNAME, CNAME FROM Salespeople AS S JOIN Customers AS C ON S.SNUM = C.SNUM JOIN Orders AS O ON O.CNUM = C.CNUM GROUP BY O.CNUM HAVING COUNT(O.CNUM) > 1;
+SNAME  CNAME
+Serres	Grass
+Peel	Clemens
+Rifkin	Cisneros
+
+
+72.	SELECT CNUM FROM Customers WHERE SNUM IN (SELECT SNUM FROM Orders GROUP BY SNUM HAVING COUNT(SNUM) > 1);
+CNUM
+2001
+2006
+2003
+2004
+2008
+
+
+73.	SELECT CITY, MAX(RATING) FROM Customers GROUP BY CITY;
+  CITY         MAX(RATING) 
+London	100
+Rome	200
+San Jose	300
+Berlin	300
+
+
+74.	SELECT DISTINCT O.SNUM, SNAME, ONUM FROM Salespeople AS S JOIN Orders AS O ON S.SNUM = O.SNUM WHERE AMT > 1000;
+SNUM  SNAME    ONUM
+1004	Motika	3002
+1002	Serres	3005
+1007	Rifkin	3006
+1001	Peel	3008
+1003	AxelRod	3009
+1002	Serres	3010
+1001	Peel	3011
+
+
+75.	SELECT RATING, CNUM, CNAME FROM Customers ORDER BY RATING DESC;
+RATING  CNUM  CNAME
+300	   2004	    Grass
+300	   2008	    Cisneros
+200	   2002	    Giovanni
+200	   2003	    Liu
+100	   2001	    Hoffman
+100	   2006	    Clemens
+100	   2007	    Pereira
+		
+
+76.	SELECT AVG(COMM) FROM Salespeople GROUP BY CITY HAVING CITY = 'London';
+AVG(COMM)
+16.0000
+
+
+77.	SELECT ONUM, AMT, ODATE FROM Orders AS O JOIN Customers AS C ON O.CNUM = C.CNUM WHERE CNAME = 'Hoffman';
+ONUM  AMT       ODATE
+3003	767.19	1990-03-10
+
+
+78.	SELECT SNAME, COMM FROM Salespeople WHERE COMM >= 10 AND COMM <= 12;
+SNAME     COMM
+Peel	12
+AxelRod	10
+Motika	11
+
+
+79.	SELECT SNAME, CITY FROM Salespeople WHERE CITY = 'London' AND COMM > 10;
+SNAME    CITY
+Peel	London
+Motika	London
+Fran	London
+
+
+80.	SELECT CNUM, MIN(AMT) FROM Orders GROUP BY CNUM;
+CNUM   MIN(AMT)
+2001	  767.19
+2002	  1713.23
+2003	  5160.45
+2004	  75.75
+2006	  4723
+2007	  1900.1
+2008	  18.69
+
+
+81.	SELECT CNAME FROM Customers WHERE CNAME LIKE 'G%' ORDER BY CNAME LIMIT 1;
+CNAME
+Giovanni
+
+
+82.	SELECT COUNT(DISTINCT CITY) FROM Customers;
+COUNT(DISTINCT CITY)
+     4
+
+
+83.	SELECT AVG(AMT) FROM Orders;
+AVG(AMT)
+2665.84
+
+
+84.	SELECT * FROM Customers WHERE CITY != 'San Jose' AND RATING > 200;
+CNUM CNAME    CITY     RATING  SNUM
+2004	  Grass	  Berlin	  300	     1002
+				
+
+85.	SELECT * FROM Salespeople WHERE COMM > 12 AND COMM < 14;
+SNUM  SNAME   CITY     COMM 
+1002	  Serres	  San Jose	13
+			
+
+86.	SELECT C.SNUM, SNAME FROM Customers AS C JOIN Salespeople AS S ON C.SNUM = S.SNUM WHERE C.CITY != S.CITY;
+SNUM  SNAME
+1003	AxelRod
+1002	Serres
+1004	Motika
+1007	Rifkin
+
+
+87.	SELECT C.SNUM, SNAME FROM Salespeople AS S JOIN Customers AS C ON S.SNUM = C.SNUM WHERE COMM > 11 AND RATING < 250;
+SNUM SNAME 
+1001	Peel
+1002	Serres
+	
+
+88.	SELECT DISTINCT S1.SNUM, S1.SNAME FROM Salespeople AS S1 JOIN Salespeople AS S2 ON S1.CITY = S2.CITY WHERE S1.COMM != S2.COMM;
+SNUM SNAME
+1008	Fran
+1004	Motika
+1001	Peel
+
+
+89.	SELECT SNAME FROM Salespeople WHERE COMM = (SELECT MAX(COMM) FROM Salespeople);
+SNAME
+Fran
+
+
+90.	____
+
+
+91.	SELECT CNAME, RATING FROM Customers ORDER BY RATING DESC;
+CNAME     RATING
+Grass	300
+Cisneros	300
+Giovanni	200
+Liu	200
+Hoffman	100
+Clemens	100
+Pereira	100
+
+
+92.	SELECT ODATE FROM Orders AS O JOIN Customers AS C ON O.CNUM = C.CNUM WHERE CNAME = 'Hoffman';
+ODATE
+1990-03-10
+
+
+93.	SELECT SNUM FROM Orders WHERE ODATE NOT BETWEEN '1990-03-10' AND '1990-05-10';
+SNUM
+1002
+1001
+
+
+94.	SELECT COUNT(DISTINCT SNUM) FROM Orders;
+COUNT(DISTINCT SNUM)
+     5
+
+
+95.	SELECT COUNT(DISTINCT CNUM) FROM Orders;
+COUNT(DISTINCT CNUM)
+     7
+96.	 SELECT SNUM, ODATE, O1.AMT FROM Orders AS O1 JOIN (SELECT MAX(AMT) AS AMT FROM Orders GROUP BY SNUM) AS O2 ON O1.AMT = O2.AMT;
+SNUM   ODATE          AMT
+1004	1990-03-10	1900.1
+1002	1990-03-10	5160.45
+1007	1990-03-10	1098.16
+1003	1990-04-10	1713.23
+1001	1990-06-10	9891.88
+
+
+97.	SELECT O.SNUM, SNAME FROM Orders AS O JOIN Salespeople AS S ON O.SNUM = S.SNUM WHERE AMT = (SELECT MAX(AMT) FROM Orders);
+SNUM   SNAME 
+1001  	  Peel
+
+
+98.	SELECT C1.CNAME, C2.CNAME FROM Customers AS C1 JOIN Customers AS C2 ON C1.RATING = C2.RATING WHERE C1.CNUM != C2.CNUM;
+  CNAME     CNAME 
+Pereira	  Hoffman
+Clemens	  Hoffman
+Liu	    Giovanni
+Giovanni  	Liu
+Cisneros	  Grass
+Pereira	   Clemens
+Hoffman	   Clemens
+Clemens  	Pereira
+Hoffman  	Pereira
+Grass	   Cisneros
+
+
+99.	SELECT ONUM, AMT FROM Orders WHERE AMT > (SELECT AVG(AMT) FROM Orders GROUP BY ODATE HAVING ODATE = '1990-04-10');
+ONUM  AMT
+3002	1900.1
+3005	5160.45
+3006	1098.16
+3008	4723
+3009	1713.23
+3010	1309.95
+3011	9891.88
+	
+
+100.	SELECT CNAME FROM Customers WHERE RATING > (SELECT RATING FROM Customers WHERE CNAME = 'Grass');
+  (NULL)
+
+
+101.	SELECT CNUM FROM Orders WHERE AMT > (SELECT AVG(AMT) FROM Orders);
+CNUM
+2003
+2006
+2006
+
+
+102.	SELECT SUM(AMT) FROM Orders GROUP BY SNUM HAVING SUM(AMT) > (SELECT MAX(AMT) FROM Orders);
+SUM(AMT)
+15382.06
+
+
+103.	SELECT SNAME, C.SNUM, COUNT(C.SNUM) FROM Customers AS C JOIN Salespeople AS S ON S.SNUM = C.SNUM GROUP BY C.SNUM HAVING COUNT(C.SNUM) > 1;
+SNAME  SNUM   COUNT(SNUM)
+Peel	     1001	      2
+Serres	     1002	      2
+
+
+104.	 SELECT C.SNUM, SNAME FROM Salespeople AS S JOIN Customers AS C ON S.CITY = C.CITY WHERE S.SNUM != C.SNUM;
+SNUM  SNAME
+1001	    Fran
+1001	    Motika
+ 1001	    Fran
+1001	    Motika
+1007	    Serres
+
+
+105.	 ____
+
+
+106.	____
+
+
+107.	SELECT SNAME FROM Salespeople WHERE COMM = (SELECT MIN(COMM) FROM Salespeople);
+SNAME
+AxelRod
